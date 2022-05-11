@@ -6,7 +6,9 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
+import { FilterQuery, QueryFields } from 'src/types';
 import { ContactsService } from './contacts.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
@@ -21,22 +23,16 @@ export class ContactsController {
   }
 
   @Get()
-  findAll() {
-    return this.contactsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.contactsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateContactDto: UpdateContactDto) {
-    return this.contactsService.update(+id, updateContactDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.contactsService.remove(+id);
+  findOne(@Query() query: QueryFields) {
+    const contactByEmail = this.contactsService.findOneByEmail(
+      query.filter.email,
+    );
+    const contactByPhone = this.contactsService.findOneByPhone(
+      query.filter.phone,
+    );
+    return {
+      contactByEmail,
+      contactByPhone,
+    };
   }
 }
