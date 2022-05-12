@@ -2,6 +2,7 @@
 import 'dotenv/config';
 import fetch, { Headers, Request } from 'cross-fetch';
 import { FilterFieldId } from 'src/types';
+import { HttpException, UnauthorizedException } from '@nestjs/common';
 
 export class AmoCRMApiClient {
   baseUrl = `https://${process.env.AMOCRM_LOGIN}.amocrm.ru`;
@@ -20,9 +21,7 @@ export class AmoCRMApiClient {
         redirect_uri: 'https://5547-188-43-11-169.ngrok.io',
       }),
     });
-    // console.log('request:', request.headers);
     const response = await fetch(request);
-    // console.log('response:', response);
     const json = await response.json();
     return json;
   };
@@ -37,12 +36,10 @@ export class AmoCRMApiClient {
         client_secret: process.env.AMOCRM_SECRET_KEY,
         grant_type: 'refresh_token',
         refresh_token: process.env.AMOCRM_REFRESH_TOKEN,
-        redirect_uri: 'https://cf45-188-43-11-169.eu.ngrok.io',
+        redirect_uri: 'https://5547-188-43-11-169.ngrok.io',
       }),
     });
-    // console.log('request:', request.body);
     const response = await fetch(request);
-    // console.log('response:', response);
     const json = await response.json();
     return json;
   };
@@ -51,18 +48,25 @@ export class AmoCRMApiClient {
     fieldName: FilterFieldId,
     fieldValue: string,
   ) => {
-    const endpoint = `${this.baseUrl}/api/v3/contacts?filter[${fieldName}]=${fieldValue}`;
-    const request = new Request(endpoint, {
-      headers: {
-        ...this.headers,
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.AMOCRM_ACCESS_TOKEN}`,
-      },
-    });
-    // console.log('request:', request.headers);
-    const response = await fetch(request);
-    const json = await response.json();
-    // console.log('json:', json._embedded.contacts);
-    return json;
+    try {
+      const endpoint = `${this.baseUrl}/api/v3/contacts?filter[${fieldName}]=${fieldValue}`;
+      const request = new Request(endpoint, {
+        headers: {
+          ...this.headers,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.AMOCRM_ACCESS_TOKEN}`,
+        },
+      });
+      const response = await fetch(request);
+      if (response.status === 200) {
+        const json = await response.json();
+        return json._embedded.contacts[0];
+      }
+      if (response.status === 204) return [][0];
+      if (response.status === 401) throw new UnauthorizedException();
+      throw new Error('unknown error');
+    } catch (err) {
+      console.log(err);
+    }
   };
 }

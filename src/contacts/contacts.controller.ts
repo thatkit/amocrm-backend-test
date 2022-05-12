@@ -1,17 +1,7 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-} from '@nestjs/common';
-import { FilterQuery, QueryFields } from 'src/types';
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Contact, QueryFields } from 'src/types';
 import { ContactsService } from './contacts.service';
 import { CreateContactDto } from './dto/create-contact.dto';
-import { UpdateContactDto } from './dto/update-contact.dto';
 
 @Controller('contacts')
 export class ContactsController {
@@ -24,15 +14,19 @@ export class ContactsController {
 
   @Get()
   async findOne(@Query() query: QueryFields) {
-    const contactByEmail = await this.contactsService.findOneByEmail(
-      query.filter.email,
-    );
-    const contactByPhone = await this.contactsService.findOneByPhone(
-      query.filter.phone,
-    );
-    return {
-      contactByEmail,
-      contactByPhone,
-    };
+    let contact: Contact;
+    // (1) Search for a contact by email
+    contact = await this.contactsService.findOneByEmail(query.filter.email);
+
+    // (2) IF NO contact found, search for a contact by phone
+    if (!contact) {
+      contact = await this.contactsService.findOneByPhone(query.filter.phone);
+    }
+
+    if (!contact) {
+      return 'POST new contact';
+    }
+
+    return 'PATCH existing contact';
   }
 }
