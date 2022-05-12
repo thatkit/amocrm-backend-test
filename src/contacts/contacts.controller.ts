@@ -23,11 +23,11 @@ export class ContactsController {
   }
 
   @Get()
-  findOne(@Query() query: QueryFields) {
-    const contactByEmail = this.contactsService.findOneByEmail(
+  async findOne(@Query() query: QueryFields) {
+    const contactByEmail = await this.contactsService.findOneByEmail(
       query.filter.email,
     );
-    const contactByPhone = this.contactsService.findOneByPhone(
+    const contactByPhone = await this.contactsService.findOneByPhone(
       query.filter.phone,
     );
     return {

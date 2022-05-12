@@ -12,13 +12,11 @@ export class ContactsService {
   }
 
   findOneByEmail(email: string) {
-    const response = this.client.FETCH_CONTACT_BY_FILTER('756829', email);
-    return response;
+    return this.client.FETCH_CONTACT_BY_FILTER('756829', email);
   }
 
   findOneByPhone(phone: string) {
-    const response = this.client.FETCH_CONTACT_BY_FILTER('757025', phone);
-    return response;
+    return this.client.FETCH_CONTACT_BY_FILTER('757025', phone);
   }
 
   update(id: number, updateContactDto: UpdateContactDto) {

@@ -11,18 +11,18 @@ export class AmoCRMApiClient {
     const endpoint = `${this.baseUrl}/oauth2/access_token`;
     const request = new Request(endpoint, {
       method: 'POST',
-      headers: this.headers,
+      headers: { ...this.headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         client_id: process.env.AMOCRM_ID,
         client_secret: process.env.AMOCRM_SECRET_KEY,
         grant_type: 'authorization_code',
         code: process.env.AUTH_CODE,
-        redirect_uri: 'https://cf45-188-43-11-169.eu.ngrok.io',
+        redirect_uri: 'https://5547-188-43-11-169.ngrok.io',
       }),
     });
     // console.log('request:', request.headers);
     const response = await fetch(request);
-    console.log('response:', response);
+    // console.log('response:', response);
     const json = await response.json();
     return json;
   };
@@ -31,18 +31,18 @@ export class AmoCRMApiClient {
     const endpoint = `${this.baseUrl}/oauth2/access_token`;
     const request = new Request(endpoint, {
       method: 'POST',
-      headers: this.headers,
+      headers: { ...this.headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         client_id: process.env.AMOCRM_ID,
         client_secret: process.env.AMOCRM_SECRET_KEY,
         grant_type: 'refresh_token',
-        code: process.env.AMOCRM_REFRESH_TOKEN,
+        refresh_token: process.env.AMOCRM_REFRESH_TOKEN,
         redirect_uri: 'https://cf45-188-43-11-169.eu.ngrok.io',
       }),
     });
-    // console.log('request:', request.headers);
+    // console.log('request:', request.body);
     const response = await fetch(request);
-    console.log('response:', response);
+    // console.log('response:', response);
     const json = await response.json();
     return json;
   };
@@ -55,13 +55,14 @@ export class AmoCRMApiClient {
     const request = new Request(endpoint, {
       headers: {
         ...this.headers,
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.AMOCRM_ACCESS_TOKEN}`,
       },
     });
-    console.log('request:', request.headers);
+    // console.log('request:', request.headers);
     const response = await fetch(request);
-    console.log('response:', response);
     const json = await response.json();
+    // console.log('json:', json._embedded.contacts);
     return json;
   };
 }

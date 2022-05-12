@@ -6,6 +6,6 @@ export class AuthService {
   constructor(private readonly client: AmoCRMApiClient) {}
 
   authoriseByAuthCode() {
-    return this.client.FETCH_ACCESS_TOKEN_BY_REFRESH_TOKEN();
+    return this.client.FETCH_ACCESS_TOKEN_BY_AUTH_CODE();
   }
 }
