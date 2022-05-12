@@ -1,10 +1,14 @@
 import { Controller, Get, Query } from '@nestjs/common';
+import { LeadsService } from 'src/leads/leads.service';
 import { Contact, QueryFields } from 'src/types';
 import { ContactsService } from './contacts.service';
 
 @Controller('contacts')
 export class ContactsController {
-  constructor(private readonly contactsService: ContactsService) {}
+  constructor(
+    private readonly contactsService: ContactsService,
+    private readonly leadsService: LeadsService,
+  ) {}
 
   @Get()
   async findOne(@Query() query: QueryFields) {
@@ -17,12 +21,24 @@ export class ContactsController {
       contact = await this.contactsService.findOneByPhone(query.filter.phone);
     }
 
+    let contactId: number;
     // (3) IF NO contact found, CREATE a new contact
     if (!contact) {
-      return await this.contactsService.create(query.filter); // --> contact.id
+      const { id } = await this.contactsService.create(query.filter);
+      contactId = id;
+    } else {
+      // (4) if the contact is found, UPDATE a new contact and retrieve the id
+      const { id } = await this.contactsService.update(
+        contact.id,
+        query.filter,
+      );
+      contactId = id;
     }
 
-    // (4) if the contact is found, UPDATE a new contact
-    return await this.contactsService.update(contact.id, query.filter);
+    // (5) CREATE a lead with the contact
+    const leads = await this.leadsService.create(contactId);
+
+    // (6) return contact id and lead id
+    return { contactId, leads };
   }
 }

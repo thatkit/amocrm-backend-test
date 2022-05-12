@@ -158,4 +158,44 @@ export class AmoCRMApiClient {
       console.log(err);
     }
   };
+
+  CREATE_LEAD = async (id: number) => {
+    try {
+      const endpoint = `${this.baseUrl}/api/v4/leads`;
+      const payload = [
+        {
+          name: '',
+          price: 0,
+          _embedded: {
+            contacts: [
+              {
+                id,
+              },
+            ],
+          },
+        },
+      ];
+
+      const request = new Request(endpoint, {
+        method: 'POST',
+        headers: {
+          ...this.headers,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.AMOCRM_ACCESS_TOKEN}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const response = await fetch(request);
+      if (response.status === 200 || response.status === 201) {
+        const json = await response.json();
+        return json._embedded.leads;
+      }
+      if (response.status === 204) return [][0];
+      if (response.status === 401) throw new UnauthorizedException();
+      throw new Error('unknown error');
+    } catch (err) {
+      console.log(err);
+    }
+  };
 }
