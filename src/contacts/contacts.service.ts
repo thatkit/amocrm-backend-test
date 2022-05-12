@@ -8,7 +8,7 @@ export class ContactsService {
   constructor(private readonly client: AmoCRMApiClient) {}
 
   create(createContactDto: CreateContactDto) {
-    return 'This action adds a new contact';
+    return this.client.CREATE_CONTACT(createContactDto);
   }
 
   findOneByEmail(email: string) {

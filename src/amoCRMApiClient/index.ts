@@ -1,8 +1,10 @@
 /* eslint-disable prettier/prettier */
 import 'dotenv/config';
-import fetch, { Headers, Request } from 'cross-fetch';
-import { FilterFieldId } from 'src/types';
-import { HttpException, UnauthorizedException } from '@nestjs/common';
+// import fetch, { Headers, Request } from 'cross-fetch';
+import 'cross-fetch/polyfill';
+import { CreateNewContactInput, FilterFieldId } from 'src/types';
+import { UnauthorizedException } from '@nestjs/common';
+import { CreateContactDto } from 'src/contacts/dto/create-contact.dto';
 
 export class AmoCRMApiClient {
   baseUrl = `https://${process.env.AMOCRM_LOGIN}.amocrm.ru`;
@@ -10,6 +12,7 @@ export class AmoCRMApiClient {
 
   FETCH_ACCESS_TOKEN_BY_AUTH_CODE = async () => {
     const endpoint = `${this.baseUrl}/oauth2/access_token`;
+
     const request = new Request(endpoint, {
       method: 'POST',
       headers: { ...this.headers, 'Content-Type': 'application/json' },
@@ -21,6 +24,7 @@ export class AmoCRMApiClient {
         redirect_uri: 'https://5547-188-43-11-169.ngrok.io',
       }),
     });
+
     const response = await fetch(request);
     const json = await response.json();
     return json;
@@ -28,6 +32,7 @@ export class AmoCRMApiClient {
 
   FETCH_ACCESS_TOKEN_BY_REFRESH_TOKEN = async () => {
     const endpoint = `${this.baseUrl}/oauth2/access_token`;
+
     const request = new Request(endpoint, {
       method: 'POST',
       headers: { ...this.headers, 'Content-Type': 'application/json' },
@@ -39,9 +44,51 @@ export class AmoCRMApiClient {
         redirect_uri: 'https://5547-188-43-11-169.ngrok.io',
       }),
     });
+
     const response = await fetch(request);
     const json = await response.json();
     return json;
+  };
+
+  CREATE_CONTACT = async (contactData: CreateContactDto) => {
+    try {
+      const endpoint = `${this.baseUrl}/api/v4/contacts`;
+      const payload: CreateNewContactInput[] = [
+        {
+          name: contactData.name,
+          custom_fields_values: [
+            {
+              field_id: 756829,
+              values: [{ value: contactData.email }],
+            },
+            {
+              field_id: 757025,
+              values: [{ value: contactData.phone }],
+            },
+          ],
+        },
+      ];
+
+      const request = new Request(endpoint, {
+        method: 'POST',
+        headers: {
+          ...this.headers,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.AMOCRM_ACCESS_TOKEN}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const response = await fetch(request);
+      if (response.status === 200 || response.status === 201) {
+        const json = await response.json();
+        return json._embedded.contacts[0];
+      }
+      if (response.status === 401) throw new UnauthorizedException();
+      throw new Error('unknown error');
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   FETCH_CONTACT_BY_FILTER = async (
@@ -50,6 +97,7 @@ export class AmoCRMApiClient {
   ) => {
     try {
       const endpoint = `${this.baseUrl}/api/v3/contacts?filter[${fieldName}]=${fieldValue}`;
+
       const request = new Request(endpoint, {
         headers: {
           ...this.headers,
@@ -57,6 +105,7 @@ export class AmoCRMApiClient {
           Authorization: `Bearer ${process.env.AMOCRM_ACCESS_TOKEN}`,
         },
       });
+
       const response = await fetch(request);
       if (response.status === 200) {
         const json = await response.json();
