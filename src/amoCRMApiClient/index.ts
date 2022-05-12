@@ -7,6 +7,8 @@ import { UnauthorizedException } from '@nestjs/common';
 import { CreateContactDto } from 'src/contacts/dto/create-contact.dto';
 import { UpdateContactDto } from 'src/contacts/dto/update-contact.dto';
 
+const redirectUri = 'https://4115-188-43-11-169.eu.ngrok.io';
+
 export class AmoCRMApiClient {
   baseUrl = `https://${process.env.AMOCRM_LOGIN}.amocrm.ru`;
   headers = new Headers();
@@ -22,7 +24,7 @@ export class AmoCRMApiClient {
         client_secret: process.env.AMOCRM_SECRET_KEY,
         grant_type: 'authorization_code',
         code: process.env.AUTH_CODE,
-        redirect_uri: 'https://5547-188-43-11-169.ngrok.io',
+        redirect_uri: redirectUri,
       }),
     });
 
@@ -42,7 +44,7 @@ export class AmoCRMApiClient {
         client_secret: process.env.AMOCRM_SECRET_KEY,
         grant_type: 'refresh_token',
         refresh_token: process.env.AMOCRM_REFRESH_TOKEN,
-        redirect_uri: 'https://5547-188-43-11-169.ngrok.io',
+        redirect_uri: redirectUri,
       }),
     });
 
