@@ -23,6 +23,6 @@ export class ContactsController {
     }
 
     // (4) if the contact is found, UPDATE a new contact
-    return this.contactsService.update(contact.id, query.filter);
+    return await this.contactsService.update(contact.id, query.filter);
   }
 }

@@ -20,6 +20,6 @@ export class ContactsService {
   }
 
   update(id: number, updateContactDto: UpdateContactDto) {
-    return `This action updates a #${id} contact`;
+    return this.client.UPDATE_CONTACT(id, updateContactDto);
   }
 }

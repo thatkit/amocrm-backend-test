@@ -5,6 +5,7 @@ import 'cross-fetch/polyfill';
 import { CreateNewContactInput, FilterFieldId } from 'src/types';
 import { UnauthorizedException } from '@nestjs/common';
 import { CreateContactDto } from 'src/contacts/dto/create-contact.dto';
+import { UpdateContactDto } from 'src/contacts/dto/update-contact.dto';
 
 export class AmoCRMApiClient {
   baseUrl = `https://${process.env.AMOCRM_LOGIN}.amocrm.ru`;
@@ -112,6 +113,45 @@ export class AmoCRMApiClient {
         return json._embedded.contacts[0];
       }
       if (response.status === 204) return [][0];
+      if (response.status === 401) throw new UnauthorizedException();
+      throw new Error('unknown error');
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  UPDATE_CONTACT = async (id: number, contactData: UpdateContactDto) => {
+    try {
+      const endpoint = `${this.baseUrl}/api/v4/contacts/${id}`;
+      const payload: CreateNewContactInput = {
+        name: contactData.name,
+        custom_fields_values: [
+          {
+            field_id: 756829,
+            values: [{ value: contactData.email }],
+          },
+          {
+            field_id: 757025,
+            values: [{ value: contactData.phone }],
+          },
+        ],
+      };
+
+      const request = new Request(endpoint, {
+        method: 'PATCH',
+        headers: {
+          ...this.headers,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.AMOCRM_ACCESS_TOKEN}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const response = await fetch(request);
+      if (response.status === 200) {
+        const json = await response.json();
+        return json;
+      }
       if (response.status === 401) throw new UnauthorizedException();
       throw new Error('unknown error');
     } catch (err) {
